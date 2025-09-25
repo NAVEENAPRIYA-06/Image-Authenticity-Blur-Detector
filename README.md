@@ -4,7 +4,7 @@ You can copy and paste this into a new file named `README.md` in the root of you
 
 -----
 
-### Image Authenticity & Blur Detector 🖼️
+### Image Authenticity & Blur Detector 
 
 This is a web-based tool developed in Python and Flask that can analyze any uploaded image to determine its authenticity and clarity. The project uses machine learning and computer vision techniques to provide instant analysis.
 
