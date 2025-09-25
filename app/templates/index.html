@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Authenticity & Blur Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: linear-gradient(135deg, #FF6B6B, #FFD166, #A1C4FD);
+            color: #333; 
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1000px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
+            padding: 40px; 
+            text-align: center;
+            width: 90%; 
+        }
+        h2 { 
+            font-family: 'Playfair Display', serif;
+            color: #ff721a; /* Changed to blue */
+            margin-bottom: 30px; 
+            font-weight: 700;
+            font-size: 2.5em;
+        }
+        form { 
+            margin-bottom: 25px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        input[type="file"] { 
+            margin-bottom: 15px; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button { 
+            padding: 12px 25px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border: none; 
+            background-color: #ff721a; /* Changed to blue */
+            color: white; 
+            border-radius: 6px; 
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        button:hover { 
+            background-color: #e65c00; /* Changed to darker orange */
+            transform: translateY(-2px);
+        }
+        .image-preview { 
+            margin-top: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-preview img {
+            max-width: 100%;
+            height: 256px; 
+            width: 256px;  
+            object-fit: cover;
+            border: 3px dashed #ff9100;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #edc897;
+            transition: transform 0.3s ease-in-out;
+        }
+        .image-preview img:hover {
+            transform: scale(1.05);
+        }
+        .result-box { 
+            margin-top: 30px; 
+            padding: 20px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+            background-color: #f9fbfd;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #f0f0f0;
+        }
+        .result-item h4 {
+            margin: 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .result-value {
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        .sharp-color { color: #28a745; }
+        .blurry-color { color: #dc3545; }
+        .genuine-color { color: #28a745; }
+        .fake-color { color: #dc3545; }
+
+        .clarity-bar-container {
+            flex-grow: 1;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-left: 15px;
+            position: relative;
+        }
+        .clarity-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Image Authenticity & Blur Detector</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="imageInput" accept="image/*">
+        <button type="submit">Analyze Image</button>
+    </form>
+    
+    <div class="image-preview">
+        <img id="uploadedImage" src="#" alt="Uploaded Image" style="display:none;">
+    </div>
+
+    <div class="result-box">
+        <h4>Analysis Results:</h4>
+        <div class="result-item">
+            <h4>Blur Status:</h4>
+            <div class="result-value" id="blurStatusContainer">
+                <i id="blurStatusIcon" class="icon"></i>
+                <span id="blurStatus">...</span>
+            </div>
+        </div>
+        <div class="result-item">
+            <h4>Clarity Score:</h4>
+            <div class="result-value">
+                <span id="blurScore">...</span>
+                <div class="clarity-bar-container">
+                    <div id="clarityBar" class="clarity-bar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="result-item">
+            <h4>Authenticity Status:</h4>
+            <div class="result-value" id="authenticityStatusContainer">
+                <i id="authenticityStatusIcon" class="icon"></i>
+                <span id="authenticityStatus">...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const MAX_CLARITY_SCORE = 1500; 
+
+    function clearResults() {
+        document.getElementById('blurStatus').textContent = '...';
+        document.getElementById('blurScore').textContent = '...';
+        document.getElementById('authenticityStatus').textContent = '...';
+        document.getElementById('authenticityStatus').className = '';
+        document.getElementById('clarityBar').style.width = '0%';
+        document.getElementById('blurStatusIcon').className = 'icon';
+        document.getElementById('authenticityStatusIcon').className = 'icon';
+    }
+
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgElement = document.getElementById('uploadedImage');
+                imgElement.src = e.target.result;
+                imgElement.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+            clearResults();
+        }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('imageInput');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Please select an image to upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        document.getElementById('blurStatus').textContent = 'Analyzing...';
+        document.getElementById('blurScore').textContent = '...';
+        document.getElementById('authenticityStatus').textContent = 'Analyzing...';
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('blurStatus').textContent = data.clarity_status;
+            const blurIcon = document.getElementById('blurStatusIcon');
+            if (data.clarity_status === 'Sharp') {
+                blurIcon.className = 'icon fas fa-check-circle sharp-color';
+            } else {
+                blurIcon.className = 'icon fas fa-times-circle blurry-color';
+            }
+            
+            document.getElementById('blurScore').textContent = data.blur_score;
+            const clarityPercentage = Math.min(100, (data.blur_score / MAX_CLARITY_SCORE) * 100);
+            const clarityBar = document.getElementById('clarityBar');
+            clarityBar.style.width = `${clarityPercentage}%`;
+            
+            if (clarityPercentage > 75) {
+                clarityBar.style.backgroundColor = '#28a745';
+            } else if (clarityPercentage > 40) {
+                clarityBar.style.backgroundColor = '#ffc107';
+            } else {
+                clarityBar.style.backgroundColor = '#dc3545';
+            }
+
+            document.getElementById('authenticityStatus').textContent = data.authenticity_status; 
+            const authIcon = document.getElementById('authenticityStatusIcon');
+            if (data.authenticity_status === 'Genuine') {
+                authIcon.className = 'icon fas fa-check-circle genuine-color';
+                document.getElementById('authenticityStatus').className = 'genuine-color';
+            } else {
+                authIcon.className = 'icon fas fa-times-circle fake-color';
+                document.getElementById('authenticityStatus').className = 'fake-color';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during analysis.');
+        });
+    });
+</script>
+
+</body>
+</html>
