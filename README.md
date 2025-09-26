@@ -1,16 +1,10 @@
-That's a perfect final step. A good `README.md` file is essential for any project. Here is a short and professional `README.md` file for your project.
-
-You can copy and paste this into a new file named `README.md` in the root of your project folder.
-
------
-
 ### Image Authenticity & Blur Detector 
 
 This is a web-based tool developed in Python and Flask that can analyze any uploaded image to determine its authenticity and clarity. The project uses machine learning and computer vision techniques to provide instant analysis.
 
 ### Features
 
-  * **Blur Detection:** Analyzes an image for blur and provides a clarity score. The detection is performed by a Convolutional Neural Network (CNN) model for high accuracy.
+  * **Blur Detection:** Analyzes an image for blur and provides a clarity score. The detection is performed by a Convolutional Neural Network (CNN) model for high accuracy.It follows the algorithm of Laplacian Variance.
   * **Authenticity Detection:** Classifies an image as "Genuine" or "Fake" based on forensic analysis performed by a fine-tuned CNN model.
   * **User-Friendly Interface:** An attractive and easy-to-use website for uploading images and viewing results.
 
