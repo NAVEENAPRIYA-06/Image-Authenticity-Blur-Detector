@@ -11,7 +11,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-# Import our detection functions (assuming you reverted blur_detector.py to Laplacian Variance)
+# Import our detection functions
 from utils.blur_detector import is_blurry 
 from utils.authenticity_classifier import load_authenticity_model, predict_authenticity
 
@@ -58,7 +58,7 @@ def upload_file():
         
         result = {
             "is_blurry": str(blurry_status),
-            "blur_score": float(round(blur_score, 2)), # This line ensures the data type is a standard float
+            "blur_score": float(round(blur_score, 2)), # This fix prevents the deployment crash
             "clarity_status": "Blurry" if blurry_status else "Sharp",
             "authenticity_status": authenticity_status
         }
@@ -66,4 +66,5 @@ def upload_file():
         return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Make sure this is changed to app.run() for Render deployment
+    app.run(debug=False)
