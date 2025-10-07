@@ -11,7 +11,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-# Import our detection functions
+# Import our detection functions (Laplacian for blur, CNN for authenticity)
 from utils.blur_detector import is_blurry 
 from utils.authenticity_classifier import load_authenticity_model, predict_authenticity
 
@@ -50,15 +50,25 @@ def upload_file():
         
         resized_img = cv2.resize(img, (256, 256))
         
-        blurry_status, blur_score = is_blurry(resized_img)
+        # --- BLUR DETECTION ---
+        try:
+            # Assumes blur_detector.py has the simple Laplacian function
+            blurry_status, blur_score = is_blurry(resized_img)
+        except Exception as e:
+            # Fallback if there is an unexpected error in detection
+            print(f"Blur Detection Error: {e}")
+            blur_score = 0
+            blurry_status = True 
         
+        # --- AUTHENTICITY DETECTION ---
         authenticity_status = "Model not loaded"
         if authenticity_model:
             authenticity_status = predict_authenticity(resized_img, authenticity_model)
         
+        # --- PREPARE RESULT (CRITICAL FIX) ---
         result = {
             "is_blurry": str(blurry_status),
-            "blur_score": float(round(blur_score, 2)), # This fix prevents the deployment crash
+            "blur_score": float(round(blur_score, 2)), # CONVERSION FIX: This prevents the crash on Render
             "clarity_status": "Blurry" if blurry_status else "Sharp",
             "authenticity_status": authenticity_status
         }
@@ -66,5 +76,5 @@ def upload_file():
         return jsonify(result)
 
 if __name__ == '__main__':
-    # Make sure this is changed to app.run() for Render deployment
+    # We set debug=False for proper Render deployment behavior
     app.run(debug=False)
