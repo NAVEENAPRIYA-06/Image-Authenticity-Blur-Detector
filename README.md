@@ -1,54 +1,44 @@
-### Image Authenticity & Blur Detector 
+Image Authenticity & Blur Detector
 
-This is a web-based tool developed in Python and Flask that can analyze any uploaded image to determine its authenticity and clarity. The project uses machine learning and computer vision techniques to provide instant analysis.
+This is a web-based tool developed using Python and Flask that analyzes any uploaded image to determine its authenticity (Is it real or fake?) and clarity (Is it sharp or blurry?).
 
-### Features
+The project uses advanced machine learning models and computer vision techniques to provide instant analysis.
 
-  * **Blur Detection:** Analyzes an image for blur and provides a clarity score. The detection is performed by a Convolutional Neural Network (CNN) model for high accuracy.It follows the algorithm of Laplacian Variance.
-  * **Authenticity Detection:** Classifies an image as "Genuine" or "Fake" based on forensic analysis performed by a fine-tuned CNN model.
-  * **User-Friendly Interface:** An attractive and easy-to-use website for uploading images and viewing results.
+🌐 Live Application
+The application is currently deployed and live on Render:
 
-### How to Run the Project
+[LAUNCH APP HERE] (https://image-authenticity-blur-detector.onrender.com)
 
-Follow these steps to get a copy of the project running on your local machine.
+Key Features:
 
-#### 1\. Clone the Repository
+Authenticity Detection (CNN): Uses a fine-tuned Convolutional Neural Network (CNN) model to classify images as "Genuine" or "Fake" by detecting subtle artifacts and manipulation patterns.
 
-```bash
-git clone [YOUR_REPOSITORY_URL]
+Blur Detection (Laplacian): Utilizes the highly effective Laplacian Variance algorithm to calculate a numerical clarity score and determine the sharpness of the image.
+
+Responsive UI: Designed to work seamlessly on both mobile devices and desktop computers.
+
+Local Setup (For Developers)
+Follow these steps to run the project locally on your machine.
+
+1. Clone the Repository
+git clone [https://github.com/NAVEENAPRIYA-06/Image-Authenticity-Blur-Detector.git](https://github.com/NAVEENAPRIYA-06/Image-Authenticity-Blur-Detector.git)
 cd Image-Authenticity-Blur-Detector
-```
 
-#### 2\. Install Dependencies
+2. Install Dependencies
+Set up your virtual environment and install all necessary Python packages.
 
-It's recommended to use a virtual environment.
-
-```bash
 python -m venv venv
-# On Windows
+# Windows:
 venv\Scripts\activate
-# On macOS/Linux
+# macOS/Linux:
 source venv/bin/activate
 
+# Install all libraries, including TensorFlow, OpenCV, and Flask
 pip install -r requirements.txt
-```
 
-#### 3\. Run the Application
-
+3. Run the Application
 Navigate to the project's root folder and run the Flask application.
 
-```bash
 python app/app.py
-```
 
-After running this command, open your web browser and go to `http://127.0.0.1:5000` to see the website.
-
------
-
-### Technologies Used
-
-  * **Python:** The core programming language.
-  * **Flask:** The web framework for the backend.
-  * **TensorFlow/Keras:** Used for building and training the CNN models.
-  * **OpenCV:** Used for image processing.
-  * **HTML, CSS, JavaScript:** Used for the front-end user interface.
+Open your web browser and navigate to http://127.0.0.1:5000.
