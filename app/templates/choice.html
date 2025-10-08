@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analysis Choice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Theme: Orange/Red Gradient (Matching Index.html) */
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: linear-gradient(135deg, #FF6B6B, #FFD166, #A1C4FD); /* Your defined gradient */
+            color: #333; 
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1000px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
+            padding: 40px; 
+            text-align: center;
+            width: 90%; 
+        }
+        h2 { 
+            font-family: 'Playfair Display', serif;
+            color: #ff721a; /* Matching Title Color */
+            margin-bottom: 30px; 
+            font-weight: 700;
+            font-size: 2.5em;
+        }
+        .image-preview { 
+            margin-top: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-preview img {
+            max-width: 100%;
+            height: 256px; 
+            width: 256px;  
+            object-fit: cover; /* Ensures image fills the container */
+            border: 3px dashed #ff9100; /* Matching Border Color */
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #edc897; /* Matching Background Color */
+        }
+        .choice-buttons {
+            margin-top: 40px;
+        }
+        .choice-buttons button { 
+            padding: 12px 25px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border: none; 
+            background-color: #ff721a; /* Matching Button Color */
+            color: white; 
+            border-radius: 6px; 
+            transition: transform 0.2s, background-color 0.2s;
+            margin: 0 15px;
+        }
+        .choice-buttons button:hover {
+            background-color: #e65c00; /* Darker Orange Hover */
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+            .image-preview img {
+                height: 200px;
+                width: 200px;
+            }
+            h2 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Analysis Options</h2>
+    <p>Select the type of analysis you would like to perform on the image below:</p>
+    <div class="image-preview">
+        <!-- FIX: We now point to the correct static/uploads folder for display -->
+        <img id="uploadedImage" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+    </div>
+    <div class="choice-buttons">
+        <button id="blurButton" data-filename="{{ filename }}">Analyze Blur</button>
+        <button id="authenticityButton" data-filename="{{ filename }}">Analyze Authenticity</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('blurButton').addEventListener('click', function(e) {
+        const filename = e.target.getAttribute('data-filename');
+        window.location.href = `/analyze/${filename}/blur`;
+    });
+
+    document.getElementById('authenticityButton').addEventListener('click', function(e) {
+        const filename = e.target.getAttribute('data-filename');
+        window.location.href = `/analyze/${filename}/authenticity`;
+    });
+</script>
+
+</body>
+</html>

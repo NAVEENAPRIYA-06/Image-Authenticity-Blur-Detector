@@ -3,31 +3,39 @@ import os
 import cv2
 import numpy as np
 import io
-from flask import Flask, request, render_template, jsonify
-import tensorflow as tf
+import uuid
+import base64
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 
-# Add the parent directory (the project root) to the system path
+# Ensure project root paths are accessible for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-# Import our detection functions (Laplacian for blur, CNN for authenticity)
+# Import detection functions
 from utils.blur_detector import is_blurry 
 from utils.authenticity_classifier import load_authenticity_model, predict_authenticity
 
+# We define the static folder where uploads will go
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT, 'static', 'uploads') 
+
 app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Define paths to your trained models
 AUTHENTICITY_MODEL_PATH = os.path.join(parent_dir, 'models', 'authenticity_model.h5')
+
+# Global variables for models
+authenticity_model = None
+MAX_CLARITY_SCORE = 1500
 
 # Load the trained model into memory when the app starts
 try:
     authenticity_model = load_authenticity_model(AUTHENTICITY_MODEL_PATH)
 except Exception as e:
-    authenticity_model = None
     print(f"Error loading model: {e}")
 
 @app.route('/')
@@ -37,44 +45,74 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return redirect(url_for('index'))
     
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        return redirect(url_for('index'))
     
     if file:
-        img_stream = io.BytesIO(file.read())
-        img_array = np.frombuffer(img_stream.read(), np.uint8)
-        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        return redirect(url_for('analysis_choice', filename=filename))
+
+@app.route('/choice/<filename>')
+def analysis_choice(filename):
+    return render_template('choice.html', filename=filename)
+
+
+@app.route('/analyze/<filename>/<analysis_type>')
+def analyze_image(filename, analysis_type):
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    
+    if not os.path.exists(filepath):
+        return redirect(url_for('index')) 
+
+    img = cv2.imread(filepath, cv2.IMREAD_COLOR)
+    resized_img = cv2.resize(img, (256, 256))
+    
+    context = {'filename': filename}
+
+    if analysis_type == 'blur':
+        # --- BLUR DETECTION & IMAGE PROCESSING ---
+        # 1. Grayscale Conversion and Encoding (for visual comparison)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, buffer = cv2.imencode('.png', gray_img)
+        gray_image_base64 = base64.b64encode(buffer).decode('utf-8')
         
-        resized_img = cv2.resize(img, (256, 256))
+        # 2. Analysis
+        blurry_status, blur_score = is_blurry(resized_img)
         
-        # --- BLUR DETECTION ---
-        try:
-            # Assumes blur_detector.py has the simple Laplacian function
-            blurry_status, blur_score = is_blurry(resized_img)
-        except Exception as e:
-            # Fallback if there is an unexpected error in detection
-            print(f"Blur Detection Error: {e}")
-            blur_score = 0
-            blurry_status = True 
+        clarity_status = "Blurry" if blurry_status else "Sharp"
+        clarity_percentage = min(100, (blur_score / MAX_CLARITY_SCORE) * 100)
         
+        if clarity_percentage > 75:
+            blur_color = '#28a745'
+        elif clarity_percentage > 40:
+            blur_color = '#ffc107'
+        else:
+            blur_color = '#dc3545'
+
+        context.update({
+            'blur_status': clarity_status,
+            'blur_score': float(round(blur_score, 2)),
+            'blur_percentage': round(clarity_percentage, 2),
+            'blur_color': blur_color,
+            'grayscale_image': gray_image_base64 # <-- CRITICAL: Passed to template
+        })
+
+    elif analysis_type == 'authenticity':
         # --- AUTHENTICITY DETECTION ---
         authenticity_status = "Model not loaded"
         if authenticity_model:
             authenticity_status = predict_authenticity(resized_img, authenticity_model)
         
-        # --- PREPARE RESULT (CRITICAL FIX) ---
-        result = {
-            "is_blurry": str(blurry_status),
-            "blur_score": float(round(blur_score, 2)), # CONVERSION FIX: This prevents the crash on Render
-            "clarity_status": "Blurry" if blurry_status else "Sharp",
-            "authenticity_status": authenticity_status
-        }
-        
-        return jsonify(result)
+        context['authenticity_status'] = authenticity_status
+    
+    context['analysis_type'] = analysis_type 
+    return render_template('result.html', **context)
 
 if __name__ == '__main__':
-    # We set debug=False for proper Render deployment behavior
-    app.run(debug=False)
+    app.run(debug=True)
